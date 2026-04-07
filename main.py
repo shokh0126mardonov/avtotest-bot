@@ -7,20 +7,19 @@ from telegram.ext import (
     MessageHandler,
     PollAnswerHandler,
     filters,
+    ConversationHandler
 )
 
 from decouple import config
-from handler import start, language, quiz, handle_answer
+from handler import start, language, quiz, handle_answer,start_conv
 
 
 def main():
     app = ApplicationBuilder().token(config("TOKEN")).build()
 
-    # basic handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler(["uz", "ru"], language))
 
-    # quiz start button
     app.add_handler(
         MessageHandler(
             filters.Regex(re.compile(r'^(📝 Testni boshlash|📝 Начать тест)$')),
@@ -28,6 +27,15 @@ def main():
         )
     )
 
+    conv_handler = ConversationHandler(
+        entry_points=[
+    MessageHandler(filters.Regex(r"^🎫 (Biletlar|Билеты)$"), start_conv)
+        ],
+        states={},
+        fallbacks=[]
+    )
+
+    app.add_handler(conv_handler)
   
     app.add_handler(PollAnswerHandler(handle_answer))
 
